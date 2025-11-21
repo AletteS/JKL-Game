@@ -516,15 +516,10 @@ export class GameEngine {
             if (segment.color === this.targetColor && this.meowBuffer) {
                 // Silence standard synth
                 if (this.oscillator) {
-                    // Using a separate gain node for oscillator vs buffer would be cleaner, 
-                    // but here we toggle. For simplicity in this single-track concept:
-                    // We will just not update oscillator freq/gain if playing buffer.
-                    // Ideally we'd mute oscillator completely.
                     this.gainNode.gain.setTargetAtTime(0, this.audioCtx.currentTime, 0.01);
                 }
 
-                // Realistic Scrubbing via BufferSource
-                // We create a short "grain" of audio starting at the current offset
+                // Realistic Scrubbing via BufferSource grain
                 const progress = (tapeX - segment.x) / segment.width;
                 const bufferOffset = Math.max(0, Math.min(progress * this.meowBuffer.duration, this.meowBuffer.duration));
                 
@@ -534,15 +529,13 @@ export class GameEngine {
                 
                 // Rate affects pitch (chipmunking)
                 const pitchShift = Math.abs(this.currentSpeed);
-                // Clamp rate to reasonable limits for web audio
+                // Clamp rate
                 src.playbackRate.value = Math.max(0.1, Math.min(pitchShift, 3.0));
                 
-                // Play a short grain (e.g. 50ms)
+                // Play grain
                 const grainDuration = 0.05;
                 src.start(this.audioCtx.currentTime, bufferOffset, grainDuration);
                 
-                // Override gain for this grain (since we muted main gain above)
-                // Actually gainNode is master. We need to unmute it for the grain.
                 this.gainNode.gain.setTargetAtTime(0.3, this.audioCtx.currentTime, 0.01);
             } else {
                 this.gainNode.gain.setTargetAtTime(0, this.audioCtx.currentTime, 0.05);
@@ -631,18 +624,12 @@ export class GameEngine {
       ctx.rect(x, y, w, h);
       ctx.clip();
 
+      // Background
       ctx.fillStyle = '#cbd5e1';
       ctx.fillRect(x, y, w, h);
       
-      ctx.fillStyle = '#94a3b8';
-      for (let i = x; i < x + w; i += 40) {
-          ctx.beginPath();
-          ctx.moveTo(i, y);
-          ctx.lineTo(i + 10, y);
-          ctx.lineTo(i - 10, y + h);
-          ctx.lineTo(i - 20, y + h);
-          ctx.fill();
-      }
+      // Use 'isOpen' to determine if cats are singing
+      // We remove any vertical stripes/grid lines that were here previously
 
       const catSpacing = 60;
       const numCats = Math.floor(w / catSpacing);
@@ -652,22 +639,28 @@ export class GameEngine {
           const cx = startX + i * catSpacing;
           const cy = y + h/2;
           
+          // Ears
           ctx.fillStyle = '#475569';
           ctx.beginPath(); ctx.moveTo(cx - 12, cy - 10); ctx.lineTo(cx - 15, cy - 20); ctx.lineTo(cx - 5, cy - 15); ctx.fill();
           ctx.beginPath(); ctx.moveTo(cx + 12, cy - 10); ctx.lineTo(cx + 15, cy - 20); ctx.lineTo(cx + 5, cy - 15); ctx.fill();
 
+          // Head
           ctx.fillStyle = '#e2e8f0';
           ctx.beginPath(); ctx.arc(cx, cy, 15, 0, Math.PI*2); ctx.fill();
 
+          // Eyes
           ctx.fillStyle = '#1e293b';
           if (isOpen) {
+            // Happy/Singing Eyes
             ctx.beginPath(); ctx.arc(cx - 5, cy - 2, 2, 0, Math.PI*2); ctx.fill();
             ctx.beginPath(); ctx.arc(cx + 5, cy - 2, 2, 0, Math.PI*2); ctx.fill();
           } else {
+             // Closed Eyes
              ctx.beginPath(); ctx.moveTo(cx - 8, cy - 2); ctx.lineTo(cx - 2, cy - 2); ctx.stroke();
              ctx.beginPath(); ctx.moveTo(cx + 2, cy - 2); ctx.lineTo(cx + 8, cy - 2); ctx.stroke();
           }
 
+          // Mouth
           if (isOpen) {
               ctx.fillStyle = '#f472b6';
               ctx.beginPath(); ctx.ellipse(cx, cy + 5, 4, 6, 0, 0, Math.PI*2); ctx.fill();
@@ -677,8 +670,8 @@ export class GameEngine {
           }
       }
       ctx.restore();
-      ctx.strokeStyle = 'rgba(0,0,0,0.1)';
-      ctx.strokeRect(x, y, w, h);
+      
+      // No border stroke!
   }
 
   drawCharacterOnTimeline() {
@@ -821,8 +814,7 @@ export class GameEngine {
       }
 
       ctx.restore();
-      ctx.strokeStyle = '#334155';
-      ctx.strokeRect(x, y, w, h);
+      // Removed strokeRect to remove vertical lines
   }
 
   drawSourceTrack() {
@@ -853,22 +845,15 @@ export class GameEngine {
           const screenX = seg.x + this.conveyorOffset;
           
           if (isCat) {
-              ctx.fillStyle = '#475569'; 
-              ctx.beginPath();
-              ctx.rect(screenX, vidY + 4, seg.width, vidH - 8);
-              ctx.fill();
-              ctx.stroke();
+              // Restore Cat Faces for Video Track
+              this.drawCatSegment(ctx, screenX, vidY + 4, seg.width, vidH - 8, seg.color === this.targetColor);
               
-              ctx.fillStyle = '#0f172a';
-              for (let i=0; i<seg.width; i+=20) {
-                  ctx.fillRect(screenX + i + 5, vidY + 8, 10, 6); 
-                  ctx.fillRect(screenX + i + 5, vidY + vidH - 14, 10, 6); 
-              }
-              
+              // Waveform Track
               const isMeow = seg.color === this.targetColor;
               this.drawWaveform(ctx, screenX, audY + 4, seg.width, audH - 8, isMeow);
 
           } else {
+              // Standard Mode
               ctx.fillStyle = seg.color;
               ctx.beginPath();
               ctx.roundRect(screenX + 1, vidY + 4, seg.width - 2, vidH - 8, 6);

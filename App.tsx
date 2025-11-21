@@ -37,7 +37,7 @@ function App() {
     
     const updatedScores = [...highScores, newScore]
       .sort((a, b) => b.score - a.score)
-      .slice(0, 10); // Keep top 10
+      .slice(0, 20); // Keep top 20
       
     setHighScores(updatedScores);
     localStorage.setItem(HIGH_SCORE_KEY, JSON.stringify(updatedScores));

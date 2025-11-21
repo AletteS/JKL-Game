@@ -41,10 +41,17 @@ const Overlay: React.FC<OverlayProps> = ({
           <span className="font-bold text-lg">Target:</span>
           {gameMode === 'CAT_MODE' ? (
               <div className="w-8 h-8 rounded-full bg-slate-200 border-2 border-white flex items-center justify-center overflow-hidden relative shadow-sm">
-                  {/* Changed ears to orange-500 to show up on slate-200 background */}
-                  <div className="absolute top-2 left-1.5 w-1 h-1 bg-orange-500 rounded-full"></div>
-                  <div className="absolute top-2 right-1.5 w-1 h-1 bg-orange-500 rounded-full"></div>
-                  <div className="absolute bottom-1.5 w-2 h-3 bg-pink-400 rounded-full animate-pulse"></div>
+                  {/* Cat Icon constructed with CSS shapes for better visibility */}
+                  {/* Ears - Dark Grey Triangles */}
+                  <div className="absolute top-1 left-1 w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-b-[8px] border-b-slate-700 -rotate-12"></div>
+                  <div className="absolute top-1 right-1 w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-b-[8px] border-b-slate-700 rotate-12"></div>
+                  
+                  {/* Mouth/Nose area */}
+                  <div className="absolute bottom-1.5 w-2 h-3 bg-pink-400 rounded-full animate-pulse z-10"></div>
+                  
+                  {/* Eyes (optional simple dots) */}
+                  <div className="absolute top-3 left-2 w-1 h-1 bg-slate-800 rounded-full z-10"></div>
+                  <div className="absolute top-3 right-2 w-1 h-1 bg-slate-800 rounded-full z-10"></div>
               </div>
           ) : (
             <div className="w-8 h-8 rounded flex items-center justify-center shadow-sm ring-2 ring-white/20" style={{ backgroundColor: targetColor }}>
@@ -129,7 +136,7 @@ const Overlay: React.FC<OverlayProps> = ({
                  </div>
                  <table className="w-full text-xs">
                    <tbody>
-                     {highScores.slice(0, 3).map((hs, i) => (
+                     {highScores.map((hs, i) => (
                        <tr key={i} className="text-slate-300">
                          <td className="w-6 text-slate-500">#{i+1}</td>
                          <td className="font-medium">{hs.name}</td>
